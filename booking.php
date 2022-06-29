@@ -1,0 +1,636 @@
+<?php
+
+define('DB_SERVER', 'localhost');
+define('DB_USERNAME', 'root');
+define('DB_PASSWORD', '');
+define('DB_NAME', 'trou_aux_biches_db');
+ 
+$link = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+ 
+if($link === false){
+    die("ERROR: Could not connect. " . mysqli_connect_error());
+}
+
+$responses = [];
+
+if (isset($_POST['arrival'], $_POST['departure'], $_POST['first_name'], $_POST['last_name'], $_POST['email'], $_POST['phone'], $_POST['adults'], $_POST['children'], $_POST['room_pref'])) {
+	// Process form data
+    $arrival = htmlspecialchars($_POST['arrival'], ENT_QUOTES);
+    $departure = htmlspecialchars($_POST['departure'], ENT_QUOTES);
+    $first_name = htmlspecialchars($_POST['first_name'], ENT_QUOTES);
+    $last_name = htmlspecialchars($_POST['last_name'], ENT_QUOTES);
+    $email = htmlspecialchars($_POST['email'], ENT_QUOTES);
+    $phone = htmlspecialchars($_POST['phone'], ENT_QUOTES);
+    $adults = htmlspecialchars($_POST['adults'], ENT_QUOTES);
+    $children = htmlspecialchars($_POST['children'], ENT_QUOTES);
+    $room_pref = htmlspecialchars($_POST['room_pref'], ENT_QUOTES);
+    // Validate email adress
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $responses[] = 'Email is not valid!';
+    }
+   
+    if (!preg_match('/^[a-zA-Z]+$/', $first_name)) {
+        $responses[] = 'First name must contain only characters!';
+    }
+   
+    
+    if(empty($responses)){
+        
+        $sql = "INSERT INTO bookings (first_name, last_name, arrival, departure, email, phone, adults, children, room_pref) VALUES (?,?,?,?,?,?,?,?,?)";
+
+        if($stmt = mysqli_prepare($link, $sql)){
+            mysqli_stmt_bind_param($stmt, "sssssssss", $param_first_name, $param_last_name, $param_arrival, $param_departure, $param_email, $param_phone, $param_adults, $param_children, $param_room_pref);
+
+            $param_first_name = $first_name;
+            $param_last_name = $last_name;
+            $param_arrival = $arrival;
+            $param_departure = $departure;
+            $param_email = $email;
+            $param_phone = $phone;
+            $param_adults = $adults;
+            $param_children = $children;
+            $param_room_pref = $room_pref;
+            
+            if(mysqli_stmt_execute($stmt)){
+                header("location: booking.php");
+            } else{
+                echo "Oops! Something went wrong. Please try again later.";
+            }
+
+            mysqli_stmt_close($stmt);
+        }
+    }
+   
+    mysqli_close($link);
+}
+?>
+
+<!doctype html>
+<html class="no-js" lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Trou Aux Biches</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/themify-icons.css">
+    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/room.css">
+
+  
+</head>
+
+<body>
+    
+    <!-- header-start -->
+    <header>
+        <div class="header-area ">
+            <div id="sticky-header" class="main-header-area">
+                <div class="container-fluid p-0">
+                    <div class="row align-items-center no-gutters">
+                        <div class="col-xl-5 col-lg-6">
+                            <div class="main-menu  d-none d-lg-block">
+                                <nav>
+                                    <ul id="navigation">
+                                        <li><a href="index.html">home</a></li>
+                                        <li><a class="active" href="booking.php">Booking</a></li>
+                                        <li><a href="contact.php">Contact</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-2">
+                            <div class="logo-img ">
+                                <a href="index.html">
+                                    <img src="img/logo/logo.png" width="80" height="70" alt="">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-xl-5 col-lg-4 d-none d-lg-block">
+                            <div class="book_room">
+                                <div class="socail_links">
+                                    <ul>
+                                        <li>
+                                            <a href="https://www.facebook.com/BeachcomberHotels">
+                                                <i class="fa fa-facebook-square"></i>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://twitter.com/Beachcomber_">
+                                                <i class="fa fa-twitter"></i>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://www.instagram.com/accounts/login/?next=/beachcomber_hotels/">
+                                                <i class="fa fa-instagram"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="book_btn d-none d-lg-block">
+                                    <a href="#test-form">Contact Us</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mobile_menu d-block d-lg-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- header-end -->
+
+    <!-- bradcam_area_start -->
+    <div class="bradcam_area breadcam_bg_1">
+        <h3>Luxury Rooms</h3>
+        <div class="container-fluid booking pb-5 wow fadeIn" data-wow-delay="0.1s" style="margin-top: 150px;">
+            <div class="container">
+                <div class="bg-white" style="padding: 35px; margin-top: 50px; border-radius: 25px;">
+                
+                            
+                                <form class="hotel-reservation-form" method="post">
+                                    <h1>Trou aux Biches</h1>
+                                    <h2 class="blue"><i class="far fa-calendar-alt black"></i>Reservation Form</h2>
+                                    <div class="fields">
+                                        <!-- Input Elements -->
+                                        <div class="wrapper">
+                                            <div>
+                                                <label for="arrival">Arrival</label>
+                                                <div class="field">
+                                                    <input id="arrival" type="date" name="arrival" required>
+                                                </div>
+                                            </div>
+                                            <div class="gap"></div>
+                                            <div>
+                                                <label for="departure">Departure</label>
+                                                <div class="field">
+                                                    <input id="departure" type="date" name="departure" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="wrapper">
+                                            <div>
+                                                <label for="first_name">First Name</label>
+                                                <div class="field">
+                                                    <i class="fas fa-user"></i>
+                                                    <input id="first_name" type="text" name="first_name" placeholder="First Name" required>
+                                                </div>
+                                            </div>
+                                            <div class="gap"></div>
+                                            <div>
+                                                <label for="last_name">Last Name</label>
+                                                <div class="field">
+                                                    <i class="fas fa-user"></i>
+                                                    <input id="last_name" type="text" name="last_name" placeholder="Last Name" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <label for="email">Email</label>
+                                        <div class="field">
+                                            <i class="fas fa-envelope"></i>
+                                            <input id="email" type="email" name="email" placeholder="Your Email" required>
+                                        </div>
+                                        <label for="phone">Phone</label>
+                                        <div class="field">
+                                            <i class="fas fa-phone"></i>
+                                            <input id="phone" type="tel" name="phone" placeholder="Your Phone Number" required>
+                                        </div>
+                                        <div class="wrapper">
+                                            <div>
+                                                <label for="adults">Adults</label>
+                                                <div class="field">
+                                                    <select id="adults" name="adults" required>
+                                                        <option disabled selected value="">--</option>
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="gap"></div>
+                                            <div>
+                                                <label for="children">Children</label>
+                                                <div class="field">
+                                                    <select id="children" name="children" required>
+                                                        <option disabled selected value="">--</option>
+                                                        <option value="0">0</option>
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <label for="room_pref">Room Preference</label>
+                                        <div class="field">
+                                            <select id="room_pref" name="room_pref" required>
+                                                <option disabled selected value="">--</option>
+                                                <option value="3 Bedroom Pool Villa">3 Bedroom Pool Villa</option>
+                                                <option value="2 Bedroom Pool Villa">2 Bedroom Pool Villa</option>
+                                                <option value="Beachfront Senior suite">Beachfront Senior suite</option>
+                                                <option value="Beachfront Suite">Beachfront Suite</option>
+                                                <option value="Tropical Junior Suite">Tropical Junior Suite</option>
+                                                <option value="2 Bedroom Family Suite">2 Bedroom Family Suite</option>
+                                            </select>
+                                        </div>
+                                        <?php if ($responses): ?>
+                                        <p class="responses"><?php echo implode('<br>', $responses); ?></p>
+                                        <?php endif; ?>
+                                        <input type="submit" value="Reserve">
+
+                                    </div>
+                                </form>
+
+                            
+                       
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- bradcam_area_end -->
+
+
+    <!-- Room Start -->
+    <div class="container-xxl py-5 bg">
+        <div class="container">
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title text-center text-primary text-uppercase">Our Rooms</h6>
+                <h1 class="mb-5">Explore Our <span class="text-primary text-uppercase">Rooms</span></h1>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="room-item shadow rounded overflow-hidden bg1">
+                        <div class="position-relative">
+                            <img class="img-fluid" src="img/rooms/1.jpg" alt="">
+                            <small
+                                class="position-absolute start-0 top-100 translate-middle-y bg-primary text-white rounded py-1 px-3 ms-4 tag">R15000/Night</small>
+                        </div>
+                        <div class="p-4 mt-2">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="mb-0">3-Bedroom Pool Villa</h5>
+                                <div class="ps-2">
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bed text-primary me-2"></i>3
+                                    Bed</small>
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bath text-primary me-2"></i>3
+                                    Bath</small>
+                                <small><i class="fa fa-wifi text-primary me-2"></i>Wifi</small>
+                            </div>
+                            <p class="text-body mb-3">Enjoy barbeques on the spacious decked terrace whilst your
+                                personal butler looks after
+                                your every need.</p>
+                            <div class="d-flex justify-content-between">
+                                <a class="btn btn-sm btn-primary rounded py-2 px-4 open_button" href="room_detail_1.html">View
+                                    Detail</a>
+                                <a class="btn btn-sm btn-dark rounded py-2 px-4" href="">Book Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="room-item shadow rounded overflow-hidden bg1">
+                        <div class="position-relative">
+                            <img class="img-fluid" src="img/rooms/3.jpg" alt="">
+                            <small
+                                class="position-absolute start-0 top-100 translate-middle-y bg-primary text-white rounded py-1 px-3 ms-4 tag">R12800/Night</small>
+                        </div>
+                        <div class="p-4 mt-2">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="mb-0">2-Bedroom Pool Villa</h5>
+                                <div class="ps-2">
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bed text-primary me-2"></i>2
+                                    Bed</small>
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bath text-primary me-2"></i>2
+                                    Bath</small>
+                                <small><i class="fa fa-wifi text-primary me-2"></i>Wifi</small>
+                            </div>
+                            <p class="text-body mb-3">Each one overlooks its own private garden, where you can kick
+                                off
+                                your day with a morning swim in your plunge pool.</p>
+                            <div class="d-flex justify-content-between">
+                                <a class="btn btn-sm btn-primary rounded py-2 px-4 open_button" href="room_detail_2.html">View
+                                    Detail</a>
+                                <a class="btn btn-sm btn-dark rounded py-2 px-4" href="">Book Now</a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.6s">
+                    <div class="room-item shadow rounded overflow-hidden bg1">
+                        <div class="position-relative">
+                            <img class="img-fluid" src="img/rooms/2.jpg" alt="">
+                            <small
+                                class="position-absolute start-0 top-100 translate-middle-y bg-primary text-white rounded py-1 px-3 ms-4 tag">R10200/Night</small>
+                        </div>
+                        <div class="p-4 mt-2">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="mb-0">Beachfront Senior Suit<br> with Pool</h5>
+                                <div class="ps-2">
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bed text-primary me-2"></i>1
+                                    Bed</small>
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bath text-primary me-2"></i>1
+                                    Bath</small>
+                                <small><i class="fa fa-wifi text-primary me-2"></i>Wifi</small>
+                            </div>
+                            <p class="text-body mb-3">This suite is a stone's throw away from the beach and has a
+                                magnificent view that dominates the beach and sea.</p>
+                            <div class="d-flex justify-content-between">
+                                <a class="btn btn-sm btn-primary rounded py-2 px-4 open_button" href="room_detail_3.html">View
+                                    Detail</a>
+                                <a class="btn btn-sm btn-dark rounded py-2 px-4" href="">Book Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.6s">
+                    <div class="room-item shadow rounded overflow-hidden bg1">
+                        <div class="position-relative">
+                            <img class="img-fluid" src="img/rooms/4.jpg" alt="">
+                            <small
+                                class="position-absolute start-0 top-100 translate-middle-y bg-primary text-white rounded py-1 px-3 ms-4 tag">R8500/Night</small>
+                        </div>
+                        <div class="p-4 mt-2">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="mb-0">Beachfront suite with pool</h5>
+                                <div class="ps-2">
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bed text-primary me-2"></i>1
+                                    Bed</small>
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bath text-primary me-2"></i>1
+                                    Bath</small>
+                                <small><i class="fa fa-wifi text-primary me-2"></i>Wifi</small>
+                            </div>
+                            <p class="text-body mb-3">A few steps away from one of the most beautiful beaches of the
+                                island, guests will enjoy holiday living in a refined
+                                setting.</p>
+                            <div class="d-flex justify-content-between">
+                                <a class="btn btn-sm btn-primary rounded py-2 px-4 open_button" href="room_detail_4.html">View
+                                    Detail</a>
+                                <a class="btn btn-sm btn-dark rounded py-2 px-4" href="">Book Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="room-item shadow rounded overflow-hidden bg1">
+                        <div class="position-relative">
+                            <img class="img-fluid" src="img/rooms/5.jpg" alt="">
+                            <small
+                                class="position-absolute start-0 top-100 translate-middle-y bg-primary text-white rounded py-1 px-3 ms-4 tag">R5000/Night</small>
+                        </div>
+                        <div class="p-4 mt-2">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="mb-0">Tropical Junior Suite</h5>
+                                <div class="ps-2">
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bed text-primary me-2"></i>1
+                                    Bed</small>
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bath text-primary me-2"></i>1
+                                    Bath</small>
+                                <small><i class="fa fa-wifi text-primary me-2"></i>Wifi</small>
+                            </div>
+                            <p class="text-body mb-3">A spacious bedroom extends onto an intimate terrace where
+                                guests
+                                will enjoy the view of the lush gardens and the pool.</p>
+                            <div class="d-flex justify-content-between">
+                                <a class="btn btn-sm btn-primary rounded py-2 px-4 open_button" href="room_detail_5.html">View
+                                    Detail</a>
+                                <a class="btn btn-sm btn-dark rounded py-2 px-4" href="">Book Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="room-item shadow rounded overflow-hidden bg1">
+                        <div class="position-relative">
+                            <img class="img-fluid" src="img/rooms/6.jpg" alt="">
+                            <small
+                                class="position-absolute start-0 top-100 translate-middle-y bg-primary text-white rounded py-1 px-3 ms-4 tag">R6800/Night</small>
+                        </div>
+                        <div class="p-4 mt-2">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="mb-0">2-Bedroom Family Suite</h5>
+                                <div class="ps-2">
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                    <small class="fa fa-star text-primary"></small>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bed text-primary me-2"></i>3
+                                    Bed</small>
+                                <small class="border-end me-3 pe-3"><i class="fa fa-bath text-primary me-2"></i>2
+                                    Bath</small>
+                                <small><i class="fa fa-wifi text-primary me-2"></i>Wifi</small>
+                            </div>
+                            <p class="text-body mb-3">Erat ipsum justo amet duo et elitr dolor, est duo duo eos
+                                lorem sed diam stet diam sed stet lorem.</p>
+                            <div class="d-flex justify-content-between">
+                                <a class="btn btn-sm btn-primary rounded py-2 px-4 open_button" href="room_detail_6.html">View
+                                    Detail</a>
+                                <a class="btn btn-sm btn-dark rounded py-2 px-4" href="">Book Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Room End -->
+
+
+
+    <!-- instragram_area_start -->
+    <div class="instragram_area">
+        <div class="single_instagram">
+            <img src="img/instragram/1.jpg" alt="">
+            <div class="ovrelay">
+                <a href="https://www.instagram.com/trouauxbichesbeachcomber/">
+                    <i class="fa fa-instagram"></i>
+                </a>
+            </div>
+        </div>
+        <div class="single_instagram">
+            <img src="img/instragram/2.jpg" alt="">
+            <div class="ovrelay">
+                <a href="https://www.instagram.com/trouauxbichesbeachcomber/">
+                    <i class="fa fa-instagram"></i>
+                </a>
+            </div>
+        </div>
+        <div class="single_instagram">
+            <img src="img/instragram/3.jpg" alt="">
+            <div class="ovrelay">
+                <a href="https://www.instagram.com/trouauxbichesbeachcomber/">
+                    <i class="fa fa-instagram"></i>
+                </a>
+            </div>
+        </div>
+        <div class="single_instagram">
+            <img src="img/instragram/4.jpg" alt="">
+            <div class="ovrelay">
+                <a href="https://www.instagram.com/trouauxbichesbeachcomber/">
+                    <i class="fa fa-instagram"></i>
+                </a>
+            </div>
+        </div>
+        <div class="single_instagram">
+            <img src="img/instragram/5.jpg" alt="">
+            <div class="ovrelay">
+                <a href="https://www.instagram.com/trouauxbichesbeachcomber/">
+                    <i class="fa fa-instagram"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- instragram_area_end -->
+
+    <!-- footer -->
+    <footer class="footer">
+        <div class="footer_top">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-3 col-md-6 col-lg-3">
+                        <div class="footer_widget">
+                            <h3 class="footer_title">
+                                address
+                            </h3>
+                            <p class="footer_text"> ROYAL ROAD - TROU AUX BICHES<br> TRIOLET 22302<br> MAURITIUS</p>
+                            <a href="contact.php" class="line-button">Get Direction</a>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 col-lg-3">
+                        <div class="footer_widget">
+                            <h3 class="footer_title">
+                                Reservation
+                            </h3>
+                            <p class="footer_text">(+230) 204 6800 <br>
+                                trouauxbiches.com</p>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-6 col-lg-2">
+                        <div class="footer_widget">
+                            <h3 class="footer_title">
+                                Navigation
+                            </h3>
+                            <ul>
+                                <li><a href="index.html">Home</a></li>
+                                <li><a href="booking.php">Rooms</a></li>
+                                <li><a href="contact.php">Contact</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6 col-lg-4">
+                        <div class="footer_widget">
+                            <h3 class="footer_title">
+                                Newsletter
+                            </h3>
+                            <form action="#" class="newsletter_form">
+                                <input type="text" placeholder="Enter your mail">
+                                <button type="submit">Sign Up</button>
+                            </form>
+                            <p class="newsletter_text">Subscribe newsletter to get updates</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="copy-right_text">
+            <div class="container">
+                <div class="footer_border"></div>
+                <div class="row">
+                   
+                    <div class="col-xl-4 col-md-5 col-lg-3">
+                        <div class="socail_links">
+                            <ul>
+                                <li>
+                                    <a href="https://www.facebook.com/BeachcomberHotels">
+                                        <i class="fa fa-facebook-square"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://twitter.com/Beachcomber_">
+                                        <i class="fa fa-twitter"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://www.instagram.com/accounts/login/?next=/beachcomber_hotels/">
+                                        <i class="fa fa-instagram"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+   
+
+
+    <!-- JS here -->
+   
+    <script src="js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/isotope.pkgd.min.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/jquery.slicknav.min.js"></script>
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <script src="js/main.js"></script>
+
+    
+
+
+
+</body>
+
+</html>
